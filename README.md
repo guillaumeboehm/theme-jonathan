@@ -20,8 +20,7 @@ $ omf install jonathan
 
 ## Features
 
-* Lorem ipsum dolor sit amet.
-* Consectetur adipisicing elit.
+* Made with lots of love
 
 
 ## Screenshot
@@ -33,12 +32,11 @@ $ omf install jonathan
 
 # License
 
-[MIT][mit] © [{{USER}}][author] et [al][contributors]
+[MIT][mit] © [guillaumeboehm][author]
 
 
 [mit]:                https://opensource.org/licenses/MIT
-[author]:             https://github.com/{{USER}}
-[contributors]:       https://github.com/{{USER}}/theme-jonathan/graphs/contributors
+[author]:             https://github.com/guillaumeboehmtheme-jonathan/graphs/contributors
 [omf-link]:           https://www.github.com/oh-my-fish/oh-my-fish
 [omz-johnathan-link]: https://github.com/ohmyzsh/ohmyzsh/blob/master/themes/jonathan.zsh-theme
 [omz-link]:           https://github.com/ohmyzsh/ohmyzsh
