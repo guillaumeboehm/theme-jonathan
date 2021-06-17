@@ -27,7 +27,7 @@ $ omf install jonathan
 ## Screenshot
 
 <p align="center">
-<img src="{{SCREENSHOT_URL}}">
+<img src="https://raw.githubusercontent.com/guillaumeboehm/theme-jonathan/master/screenshot.png">
 </p>
 
 
