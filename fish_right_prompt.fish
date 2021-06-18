@@ -1,33 +1,60 @@
+# You can override some default options in your config.fish:
+#
+# set -g __jonathan_print_cmd_duration no   # default=yes
+# set -g __jonathan_cmd_duration_short_color <color>   # default=brcyan
+# set -g __jonathan_cmd_duration_long_color <color>   # default=blue
+#
+# set -g __jonathan_print_return_code no   # default=yes
+# set -g __jonathan_return_code_success_color <color>   # default=abc48d
+# set -g __jonathan_return_code_error_color <color>   # default=red
+#
+# set -g __jonathan_print_date no   # default=yes
+# set -g __jonathan_date_format <date format>   # default='+%a,%B%d', do not touch if you don't know what it is
+# set -g __jonathan_date_color <color>   # default=d9bb68
+
 function fish_right_prompt 
-  set -g __fish_print_cmd_duration yes
-  set -g __fish_print_date yes
-
+  # Settings
+  __jonathan_right_prompt_settings
+  ####
+    
   set -l exit_code $status
-  set -l cmd_duration $CMD_DURATION
 
-  if test $exit_code -ne 0
-    set_color red
-  else
-    set_color abc48d
-  end
-  printf '%d ↵' $exit_code
-  if [ "$__fish_print_cmd_duration" = 'yes' ]
-    if test $cmd_duration -ge 5000
-      set_color brcyan
+  # return code
+  if [ "$__jonathan_print_return_code" = 'yes' ]
+    if test $exit_code -ne 0
+      set_color $__jonathan_return_code_error_color
     else
-      set_color blue
+      set_color $__jonathan_return_code_success_color
+    end
+    printf '%d ↵' $exit_code
+  end
+
+  # cmd duration
+  if [ "$__jonathan_print_cmd_duration" = 'yes' ]
+    set -l cmd_duration $CMD_DURATION
+    if test $cmd_duration -ge 5000
+      set_color $__jonathan_cmd_duration_long_color
+    else
+      set_color $__jonathan_cmd_duration_short_color
     end
     printf '(%s)' (__print_duration $cmd_duration)
   end
+
   set_color 80babf
-  if [ "$__fish_print_date" = 'yes' ]
+  # date
+  if [ "$__jonathan_print_date" = 'yes' ]
     echo -n '('
-    set_color d9bb68
-    echo -n (date '+%a,%B%d')
+    set_color $__jonathan_date_color
+    echo -n (date $__jonathan_date_format)
     set_color 80babf
     echo -n ')'
   end
-  echo -n '─╯'
+  if test $__jonathan_print_date = 'no'; and test $__jonathan_print_cmd_duration = 'no'
+    echo -n '╰'
+  else
+    echo -n '─'
+  end
+  echo -n '╯'
 end
 
 
@@ -54,3 +81,34 @@ function _convertsecs
   printf "%02d:%02d:%02d\n" (math -s0 $argv[1] / 3600) (math -s0 (math $argv[1] \% 3600) / 60) (math -s0 $argv[1] \% 60)
 end
 
+function __jonathan_right_prompt_settings
+  if not set -q __jonathan_print_cmd_duration
+    set -g __jonathan_print_cmd_duration yes
+  end
+  if not set -q __jonathan_cmd_duration_short_color
+    set -g __jonathan_cmd_duration_short_color brcyan
+  end
+  if not set -q __jonathan_cmd_duration_long_color
+    set -g __jonathan_cmd_duration_long_color blue
+  end
+    
+  if not set -q __jonathan_print_return_code
+    set -g __jonathan_print_return_code yes
+  end
+  if not set -q __jonathan_return_code_success_color
+    set -g __jonathan_return_code_success_color abc48d
+  end
+  if not set -q __jonathan_return_code_error_color
+    set -g __jonathan_return_code_error_color red
+  end
+    
+  if not set -q __jonathan_print_date
+    set -g __jonathan_print_date yes
+  end
+  if not set -q __jonathan_date_format
+    set -g __jonathan_date_format '+%a,%B%d'
+  end
+  if not set -q __jonathan_date_color
+    set -g __jonathan_date_color d9bb68
+  end
+end
