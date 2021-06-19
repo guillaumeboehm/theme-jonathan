@@ -1,16 +1,16 @@
 # You can override some default options in your config.fish:
 #
-# set -g __jonathan_print_cmd_duration no   # default=yes
-# set -g __jonathan_cmd_duration_short_color <color>   # default=brcyan
-# set -g __jonathan_cmd_duration_long_color <color>   # default=blue
+# set -g __jonathan_print_cmd_duration yes
+# set -g __jonathan_cmd_duration_short_color 008888
+# set -g __jonathan_cmd_duration_long_color cc2200
 #
-# set -g __jonathan_print_return_code no   # default=yes
-# set -g __jonathan_return_code_success_color <color>   # default=abc48d
-# set -g __jonathan_return_code_error_color <color>   # default=red
+# set -g __jonathan_print_return_code yes
+# set -g __jonathan_return_code_success_color abc48d
+# set -g __jonathan_return_code_error_color red
 #
-# set -g __jonathan_print_date no   # default=yes
-# set -g __jonathan_date_format <date format>   # default='+%a,%B%d', do not touch if you don't know what it is
-# set -g __jonathan_date_color <color>   # default=d9bb68
+# set -g __jonathan_print_date yes
+# set -g __jonathan_date_format '+%a,%B%d'
+# set -g __jonathan_date_color d9bb68
 
 function fish_right_prompt 
   # Settings
@@ -86,10 +86,10 @@ function __jonathan_right_prompt_settings
     set -g __jonathan_print_cmd_duration yes
   end
   if not set -q __jonathan_cmd_duration_short_color
-    set -g __jonathan_cmd_duration_short_color brcyan
+    set -g __jonathan_cmd_duration_short_color 008888
   end
   if not set -q __jonathan_cmd_duration_long_color
-    set -g __jonathan_cmd_duration_long_color blue
+    set -g __jonathan_cmd_duration_long_color cc2200
   end
     
   if not set -q __jonathan_print_return_code

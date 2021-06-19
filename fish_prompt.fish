@@ -4,62 +4,65 @@
 # with some elements of the lambda theme from oh-my-fish
 #
 # You can override some default options in your config.fish:
-#  set -g __jonathan_prompt_char '\'ω\''   # default='><>'
-#  set -g __jonathan_prompt_char_rewrite_root yes   # default=no
-#  set -g __jonathan_main_color <color>   # defaut=80babf
-#  set -g __jonathan_secondary_color <color>   # defaut=666666
-#  set -g __jonathan_tertiary_color <color>   # defaut=white
-#  set -g __jonathan_pwd_color <color>   # defaut=abc48d
-#  set -g __jonathan_print_time no   # defaut=yes
-#  set -g __jonathan_time_color <color>   # defaut=d9bb68
-#  set -g __jonathan_print_git no   # defaut=yes
-#  set -g __jonathan_print_multiplexer no   # defaut=yes
-#  set -g __jonathan_multiplexer_color <color>   # defaut=d17c3d
-#  set -g __jonathan_print_user no   # defaut=yes
-#  set -g __jonathan_user_color <color>   # defaut=80babf
-#  set -g __jonathan_print_hostname no   # defaut=yes
-#  set -g __jonathan_hostname_color <color>   # defaut=abc48d
+#  set -g __jonathan_prompt_char '><>'
+#  set -g __jonathan_prompt_char_rewrite_root no
+#  set -g __jonathan_main_color 80babf
+#  set -g __jonathan_secondary_color 666666
+#  set -g __jonathan_tertiary_color white
+#  set -g __jonathan_use_shrunk_pwd no
+#  set -g __jonathan_pwd_color abc48d
+#  set -g __jonathan_pwd_crop_color 555555
+#  set -g __jonathan_print_time yes
+#  set -g __jonathan_time_color d9bb68
+#  set -g __jonathan_print_git yes
+#  set -g __jonathan_print_env yes
+#  set -g __jonathan_env_color 93879c
+#  set -g __jonathan_print_multiplexer yes
+#  set -g __jonathan_multiplexer_color d17c3d
+#  set -g __jonathan_print_user yes
+#  set -g __jonathan_user_color 80babf
+#  set -g __jonathan_print_hostname yes
+#  set -g __jonathan_hostname_color abc48d
+#  set -g __jonathan_minimum_midbar_length 3
+#  set -g __jonathan_show_pwd_beginning_on_crop 15
+#
+#  set -g __fish_git_prompt_char_stateseparator ' '
+#  set -g __fish_git_prompt_color 80babf
+#  set -g __fish_git_prompt_color_flags df5f00
+#  set -g __fish_git_prompt_color_prefix white
+#  set -g __jonathan_git_prompt_showdirtystate yes
+#  set -g __jonathan_git_prompt_showuntrackedfiles yes
+#  set -g __jonathan_git_prompt_showstashstate yes
+#  set -g __jonathan_git_prompt_show_informative_status yes
 
 function fish_prompt
   
   # Cache exit status
   set -l last_status $status
 
-  # Just calculate these once, to save a few cycles when displaying the prompt
+  # Just compute these once, to save a few cycles when displaying the prompt
   if not set -q __fish_prompt_hostname
     set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
   end
 
+  set -l normal (set_color normal)
+  set -l white (set_color FFFFFF)
+
   __jonathan_prompt_settings
 
   # Setup colors
-
   set -l main_color (set_color $__jonathan_main_color)
   set -l secondary_color (set_color $__jonathan_secondary_color)
   set -l tertiary_color (set_color $__jonathan_tertiary_color)
   set -l pwd_color (set_color $__jonathan_pwd_color)
-  set -l datetime_color (set_color $__jonathan_time_color)
+  set -l pwd_crop_color (set_color $__jonathan_pwd_crop_color)
+  set -l time_color (set_color $__jonathan_time_color)
+  set -l env_color (set_color $__jonathan_env_color)
   set -l multiplexer_color (set_color $__jonathan_multiplexer_color)
   set -l user_color (set_color $__jonathan_user_color)
   set -l hostname_color (set_color $__jonathan_hostname_color)
 
-  set -l normal (set_color normal)
-  set -l white (set_color FFFFFF)
-  set -l turquoise (set_color 5fdfff)
-
-  # Configure __fish_git_prompt
-  set -g __fish_git_prompt_char_stateseparator ' '
-  set -g __fish_git_prompt_color 80babf
-  set -g __fish_git_prompt_color_flags df5f00
-  set -g __fish_git_prompt_color_prefix white
-  set -g __fish_git_prompt_color_suffix white
-  set -g __fish_git_prompt_showdirtystate true
-  set -g __fish_git_prompt_showuntrackedfiles true
-  set -g __fish_git_prompt_showstashstate true
-  set -g __fish_git_prompt_show_informative_status true 
-
   set -l term_width $COLUMNS
-
 
   set -l current_user ''
   set -l user_length 0
@@ -68,7 +71,6 @@ function fish_prompt
     set user_length (string length $current_user)
   end
 
-
   set -l hard_hostname ''
   set -l hard_hostname_length 0
   if test $__jonathan_print_hostname = 'yes'
@@ -76,7 +78,11 @@ function fish_prompt
     set hard_hostname_length (string length $hard_hostname)
   end
 
-  set -l current_pwd (pwd|sed "s=$HOME=~=")
+  if test $__jonathan_use_shrunk_pwd = 'yes'
+    set current_pwd (prompt_pwd)
+  else
+    set current_pwd (pwd|sed "s=$HOME=~=")
+  end
   set -l formatted_pwd (echo $current_pwd)
   set -l pwd_length (string length $formatted_pwd)
 
@@ -104,13 +110,21 @@ function fish_prompt
   end
   set -l fill_length (__jonathan_fill_length $term_width $user_length $hard_hostname_length $pwd_length $tmux_prompt_length $decoration_length)
 
-  if test $fill_length -lt 3
-    set -l to_remove (math "0-$fill_length")
-    set to_remove (math "$to_remove+7")
-    set formatted_pwd '...'(echo $current_pwd | cut -c $to_remove-)
+  set -l min_length $__jonathan_minimum_midbar_length
+  if test $fill_length -lt $min_length
+    set -l to_remove (math "$min_length-$fill_length")
+    
+    set -l crop (math $to_remove+(math "3+1")) # 3 for '...' +1 for the cut cmd
+    set -l tmp_pwd (echo $current_pwd | cut -c $crop-)
+    set formatted_pwd '...'$tmp_pwd
     set pwd_length (string length $formatted_pwd)
+    set formatted_pwd $pwd_crop_color'...'$pwd_color$tmp_pwd
+    # we've got enough space to show the beginning of the pwd (twice the characters to show at the beginning)
+    if test $__jonathan_show_pwd_beginning_on_crop -gt 0; and test $pwd_length -gt (math "$__jonathan_show_pwd_beginning_on_crop*2")
+      set formatted_pwd $pwd_color(echo $current_pwd | cut -c -$__jonathan_show_pwd_beginning_on_crop)$pwd_crop_color'...'$pwd_color(echo $current_pwd | cut -c (math $__jonathan_show_pwd_beginning_on_crop+$crop)-)
+    end
 
-    set fill_length (math "$fill_length-$to_remove")
+    set fill_length $min_length
   end
 
   # Line 1
@@ -139,19 +153,20 @@ function fish_prompt
   # Line 2
   echo -n $main_color'╰'
   # support for virtual env name
-  if set -q VIRTUAL_ENV
-      echo -n "($turquoise"(basename "$VIRTUAL_ENV")"$white)"
+  if set -q VIRTUAL_ENV; and test $__jonathan_print_env = 'yes'
+    echo -n $env_color'{'(basename "$VIRTUAL_ENV")'}'
   end
   if test $__jonathan_print_time = 'yes'; or test $__jonathan_print_git = 'yes'
     echo -n $main_color'─('
     if test $__jonathan_print_time = 'yes'
-      echo -n $datetime_color(date +%H:%M:%S)
+      echo -n $time_color(date +%H:%M:%S)
     end
+    set -l sep ''
     if test $__jonathan_print_time = 'yes'; and test $__jonathan_print_git = 'yes'
-      echo -n ' '
+      set sep ' '
     end
     if test $__jonathan_print_git = 'yes'
-      __fish_git_prompt "on %s"
+      __fish_git_prompt $sep"on %s"
     end
     echo -n $main_color')'
   end
@@ -236,8 +251,14 @@ function __jonathan_prompt_settings
     set -g __jonathan_tertiary_color white
   end
 
+  if not set -q __jonathan_use_shrunk_pwd
+    set -g __jonathan_use_shrunk_pwd no
+  end
   if not set -q __jonathan_pwd_color
     set -g __jonathan_pwd_color abc48d
+  end
+  if not set -q __jonathan_pwd_crop_color
+    set -g __jonathan_pwd_crop_color 555555
   end
   if not set -q __jonathan_print_time
     set -g __jonathan_print_time yes
@@ -247,6 +268,12 @@ function __jonathan_prompt_settings
   end
   if not set -q __jonathan_print_git
     set -g __jonathan_print_git yes
+  end
+  if not set -q __jonathan_print_env
+    set -g __jonathan_print_env yes
+  end
+  if not set -q __jonathan_env_color
+    set -g __jonathan_env_color 93879c
   end
 
   if not set -q __jonathan_print_multiplexer
@@ -266,6 +293,38 @@ function __jonathan_prompt_settings
   end
   if not set -q __jonathan_hostname_color
     set -g __jonathan_hostname_color abc48d
+  end
+  if not set -q __jonathan_minimum_midbar_length
+    set -g __jonathan_minimum_midbar_length 3
+  end
+  if not set -q __jonathan_show_pwd_beginning_on_crop
+    set -g __jonathan_show_pwd_beginning_on_crop 15
+  end
+
+  # Configure __fish_git_prompt
+  if not set -q __fish_git_prompt_char_stateseparator
+    set -g __fish_git_prompt_char_stateseparator ' '
+  end
+  if not set -q __fish_git_prompt_color
+    set -g __fish_git_prompt_color 80babf
+  end
+  if not set -q __fish_git_prompt_color_flags
+    set -g __fish_git_prompt_color_flags df5f00
+  end
+  if not set -q __fish_git_prompt_color_prefix
+    set -g __fish_git_prompt_color_prefix white
+  end
+  if not set -q __jonathan_git_prompt_showdirtystate; or test $__jonathan_git_prompt_showdirtystate = 'yes'
+    set -g __fish_git_prompt_showdirtystate true
+  end
+  if not set -q __jonathan_git_prompt_showuntrackedfiles; or test $__jonathan_git_prompt_showuntrackedfiles = 'yes'
+    set -g __fish_git_prompt_showuntrackedfiles true
+  end
+  if not set -q __jonathan_git_prompt_showstashstate; or test $__jonathan_git_prompt_showstashstate = 'yes'
+    set -g __fish_git_prompt_showstashstate true
+  end
+  if not set -q __jonathan_git_prompt_show_informative_status; or test $__jonathan_git_prompt_show_informative_status = 'yes'
+    set -g __fish_git_prompt_show_informative_status False
   end
 
 end
