@@ -16,6 +16,10 @@
 ```fish
 $ omf install jonathan
 ```
+If the command above failed, the theme is simply not officially listed yet, in this case use the command bellow :
+```fish
+$ omf install https://github.com/guillaumeboehm/theme-jonathan
+```
 
 ## Features
 
