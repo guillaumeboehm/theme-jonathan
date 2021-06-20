@@ -41,25 +41,25 @@ function __jonathan_greeting_settings
 end
 
 
-#function __jonathan_get_tmux_window
-#  tmux lsw | grep active | sed 's/\*.*$//g;s/: / /1' | awk '{ print $2 "-" $1 }' -
-#end
-#
-#function __jonathan_get_screen_window
-#  set initial (screen -Q windows; screen -Q echo "")
-#  set middle (echo $initial | sed 's/  /\n/g' | grep '\*' | sed 's/\*\$ / /g')
-#  echo $middle | awk '{ print $2 "-" $1 }' -
-#end
-#
-#function __jonathan_is_multiplexed
-#  set multiplexer ""
-#  if test -z $TMUX
-#  else
-#    set multiplexer "tmux"
-#  end
-#  if test -z $WINDOW
-#  else
-#    set multiplexer "screen"
-#  end
-#  echo $multiplexer
-#end
+function __jonathan_get_tmux_window
+  tmux lsw | grep active | sed 's/\*.*$//g;s/: / /1' | awk '{ print $2 "-" $1 }' -
+end
+
+function __jonathan_get_screen_window
+  set initial (screen -Q windows; screen -Q echo "")
+  set middle (echo $initial | sed 's/  /\n/g' | grep '\*' | sed 's/\*\$ / /g')
+  echo $middle | awk '{ print $2 "-" $1 }' -
+end
+
+function __jonathan_is_multiplexed
+  set multiplexer ""
+  if test -z $TMUX
+  else
+    set multiplexer "tmux"
+  end
+  if test -z $WINDOW
+  else
+    set multiplexer "screen"
+  end
+  echo $multiplexer
+end
