@@ -40,13 +40,13 @@ function fish_right_prompt
     printf '(%s)' (__print_duration $cmd_duration)
   end
 
-  set_color 80babf
+  set_color $__jonathan_main_color
   # date
   if [ "$__jonathan_print_date" = 'yes' ]
     echo -n '('
     set_color $__jonathan_date_color
     echo -n (date $__jonathan_date_format)
-    set_color 80babf
+    set_color $__jonathan_main_color
     echo -n ')'
   end
   if test $__jonathan_print_date = 'no'; and test $__jonathan_print_cmd_duration = 'no'
@@ -54,7 +54,18 @@ function fish_right_prompt
   else
     echo -n '─'
   end
+  if test $__jonathan_print_bg_procs = 'yes'
+    set -l bg_procs (__jonathan_bg_procs)
+    if test $bg_procs -ne 0
+      echo -n '('
+      set_color $__jonathan_bg_procs_color
+      echo -n "$bg_procs&"
+      set_color $__jonathan_main_color
+      echo -n ')'
+    end
+  end
   echo -n '╯'
+  set_color normal
 end
 
 
@@ -79,6 +90,11 @@ function __print_duration
 end
 function _convertsecs
   printf "%02d:%02d:%02d\n" (math -s0 $argv[1] / 3600) (math -s0 (math $argv[1] \% 3600) / 60) (math -s0 $argv[1] \% 60)
+end
+
+function __jonathan_bg_procs
+  set -l bg_procs (jobs -p | wc -l)
+  echo -n $bg_procs
 end
 
 function __jonathan_right_prompt_settings
@@ -110,5 +126,11 @@ function __jonathan_right_prompt_settings
   end
   if not set -q __jonathan_date_color
     set -g __jonathan_date_color d9bb68
+  end
+  if not set -q __jonathan_print_bg_procs
+    set -g __jonathan_print_bg_procs yes
+  end
+  if not set -q __jonathan_bg_procs_color
+    set -g __jonathan_bg_procs_color 678572
   end
 end

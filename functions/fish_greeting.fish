@@ -15,6 +15,7 @@ function fish_greeting
       echo $greeting_color$__jonathan_greeting_msg
     end
   end
+  set_color normal
 end
 
 function __jonathan_greeting_settings
