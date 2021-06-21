@@ -118,58 +118,98 @@ function fish_prompt
     set -l tmp_pwd (echo $current_pwd | cut -c $crop-)
     set formatted_pwd '...'$tmp_pwd
     set pwd_length (string length $formatted_pwd)
-    set formatted_pwd $pwd_crop_color'...'$pwd_color$tmp_pwd
-    # we've got enough space to show the beginning of the pwd (twice the characters to show at the beginning)
-    if test $__jonathan_show_pwd_beginning_on_crop -gt 0; and test $pwd_length -gt (math "$__jonathan_show_pwd_beginning_on_crop*2")
-      set formatted_pwd $pwd_color(echo $current_pwd | cut -c -$__jonathan_show_pwd_beginning_on_crop)$pwd_crop_color'...'$pwd_color(echo $current_pwd | cut -c (math $__jonathan_show_pwd_beginning_on_crop+$crop)-)
-    end
+    if test $pwd_length -gt 3
+      set formatted_pwd $pwd_crop_color'...'$pwd_color$tmp_pwd
+      # we've got enough space to show the beginning of the pwd (twice the characters to show at the beginning)
+      if test $__jonathan_show_pwd_beginning_on_crop -gt 0; and test $pwd_length -gt (math "$__jonathan_show_pwd_beginning_on_crop*2")
+        set formatted_pwd $pwd_color(echo $current_pwd | cut -c -$__jonathan_show_pwd_beginning_on_crop)$pwd_crop_color'...'$pwd_color(echo $current_pwd | cut -c (math $__jonathan_show_pwd_beginning_on_crop+$crop)-)
+      end
+      set fill_length $min_length
+    else # If the width is too small to even crop hide stuff
+      set formatted_pwd $current_pwd
+      set pwd_length (string length $formatted_pwd)
+      set fill_length (__jonathan_fill_length $term_width 0 0 $pwd_length 0 4)
+      set -l to_remove (math "$min_length-$fill_length")
+      
+      if test $to_remove -gt 0
+        set -l crop (math $to_remove+(math "3+1")) # 3 for '...' +1 for the cut cmd
+        set -l tmp_pwd (echo $current_pwd | cut -c $crop-)
+        set formatted_pwd '...'$tmp_pwd
+        set pwd_length (string length $formatted_pwd)
+        
+        set fill_length (__jonathan_fill_length $term_width 0 0 $pwd_length 0 4)
+      end
+      set -g __jonathan_hide_right_side
 
-    set fill_length $min_length
+    end
   end
 
   # Line 1
   # left side
-  echo -n $main_color'╭─'$secondary_color'('$pwd_color$formatted_pwd$secondary_color')'
+  echo -n $main_color'╭─'
+  if not set -q __jonathan_hide_right_side
+    echo -n $secondary_color'('
+  end
+  echo -n $pwd_color$formatted_pwd
+  if not set -q __jonathan_hide_right_side
+    echo -n $secondary_color')'
+  end
   
   # fill in
   if test $fill_length -gt 0
     echo -n $main_color(string repeat -n$fill_length ─)
   end
 
+  #TODO Don't print right side if size too long
   #right side
-  if test $__jonathan_print_user = 'yes'; or test $__jonathan_print_hostname = 'yes'; or test $__jonathan_print_multiplexer = 'yes';
-    echo -n $secondary_color'('
-    echo -n $multiplexer_color$tmux_prompt
-    echo -n $user_color$current_user
-    if test $__jonathan_print_user = 'yes'; and test $__jonathan_print_hostname = 'yes'
-      echo -n $secondary_color'@'
+  if not set -q __jonathan_hide_right_side
+    if test $__jonathan_print_user = 'yes'; or test $__jonathan_print_hostname = 'yes'; or test $__jonathan_print_multiplexer = 'yes';
+      echo -n $secondary_color'('
+      echo -n $multiplexer_color$tmux_prompt
+      echo -n $user_color$current_user
+      if test $__jonathan_print_user = 'yes'; and test $__jonathan_print_hostname = 'yes'
+        echo -n $secondary_color'@'
+      end
+      echo -n $hostname_color$hard_hostname
+      echo -n $secondary_color')'
     end
-    echo -n $hostname_color$hard_hostname
-    echo -n $secondary_color')'
   end
   echo -n $main_color'─╮'
   echo
 
   # Line 2
   echo -n $main_color'╰'
+  set -g __jonathan_left_second_line_length 1
   # support for virtual env name
   if set -q VIRTUAL_ENV; and test $__jonathan_print_env = 'yes'
-    echo -n $env_color'{'(basename "$VIRTUAL_ENV")'}'
+    set -l env'{'(basename "$VIRTUAL_ENV")'}'
+    set -l env_length (string length $env)
+    set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+$env_length")
+    echo -n $env_color$env
   end
   if test $__jonathan_print_time = 'yes'; or test $__jonathan_print_git = 'yes'
     echo -n $main_color'─('
+    set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+3") # -()
     if test $__jonathan_print_time = 'yes'
+      set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+8")
       echo -n $time_color(date +%H:%M:%S)
     end
     set -l sep ''
     if test $__jonathan_print_time = 'yes'; and test $__jonathan_print_git = 'yes'
+      set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+1")
       set sep ' '
     end
     if test $__jonathan_print_git = 'yes'
+      set -l git_length (string length (__fish_git_prompt $sep"on %s" | sed 's/\x1B[@A-Z\\\]^_]\|\x1B\[[0-9:;<=>?]*[-!"#$%&'"'"'()*+,.\/]*[][\\@A-Z^_`a-z{|}~]//g'))
+      set -l git_length (math "$git_length-5")
+      set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+$git_length")
       __fish_git_prompt $sep"on %s"
     end
     echo -n $main_color')'
   end
+  set -l promptchar_length (string length $__jonathan_prompt_char)
+  set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+1")
+  set -g __jonathan_left_second_line_length (math "$promptchar_length+$__jonathan_left_second_line_length")
   echo -n $main_color'─'$__jonathan_prompt_char $normal
 end
 

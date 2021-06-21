@@ -32,41 +32,48 @@ function fish_right_prompt
     printf '%d ↵' $exit_code
   end
 
-  # cmd duration
-  if [ "$__jonathan_print_cmd_duration" = 'yes' ]
-    set -l cmd_duration $CMD_DURATION
-    if test $cmd_duration -ge 5000
-      set_color $__jonathan_cmd_duration_long_color
-    else
-      set_color $__jonathan_cmd_duration_short_color
+  set -l approximate_length (math "$__jonathan_left_second_line_length+30")
+  if test (math "$COLUMNS/$approximate_length") -gt 2 # a bit random / to think through
+    # cmd duration
+    if [ "$__jonathan_print_cmd_duration" = 'yes' ]
+      set -l cmd_duration $CMD_DURATION
+      if test $cmd_duration -ge 5000
+        set_color $__jonathan_cmd_duration_long_color
+      else
+        set_color $__jonathan_cmd_duration_short_color
+      end
+      printf '(%s)' (__print_duration $cmd_duration)
     end
-    printf '(%s)' (__print_duration $cmd_duration)
-  end
 
-  set_color $__jonathan_main_color
-  # date
-  if [ "$__jonathan_print_date" = 'yes' ]
-    echo -n '('
-    set_color $__jonathan_date_color
-    echo -n (date $__jonathan_date_format)
     set_color $__jonathan_main_color
-    echo -n ')'
-  end
-  if test $__jonathan_print_date = 'no'; and test $__jonathan_print_cmd_duration = 'no'
-    echo -n '╰'
-  else
-    echo -n '─'
-  end
-  if test $__jonathan_print_bg_procs = 'yes'
-    set -l bg_procs (__jonathan_bg_procs)
-    if test $bg_procs -ne 0
+    # date
+    if [ "$__jonathan_print_date" = 'yes' ]
       echo -n '('
-      set_color $__jonathan_bg_procs_color
-      echo -n "$bg_procs&"
+      set_color $__jonathan_date_color
+      echo -n (date $__jonathan_date_format)
       set_color $__jonathan_main_color
       echo -n ')'
     end
+    if test $__jonathan_print_date = 'no'; and test $__jonathan_print_cmd_duration = 'no'
+      echo -n '╰'
+    else
+      echo -n '─'
+    end
+    if test $__jonathan_print_bg_procs = 'yes'
+      set -l bg_procs (__jonathan_bg_procs)
+      if test $bg_procs -ne 0
+        echo -n '('
+        set_color $__jonathan_bg_procs_color
+        echo -n "$bg_procs&"
+        set_color $__jonathan_main_color
+        echo -n ')'
+      end
+    end
+  else
+    set_color $__jonathan_main_color
+    echo -n '╰'
   end
+  set_color $__jonathan_main_color
   echo -n '╯'
   set_color normal
 end
