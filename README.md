@@ -31,6 +31,7 @@ $ omf install https://github.com/guillaumeboehm/theme-jonathan
 * Virtual environment prompt
 * Multiplexer prompt
 * Last command execution duration prompt
+* Background jobs prompt
 * Very customisable, choose what to display and the color of everything
 * Choose your prompt character, I recommend 'ω'
 
@@ -81,6 +82,8 @@ set -g __jonathan_return_code_error_color red
 set -g __jonathan_print_date yes
 set -g __jonathan_date_format '+%a,%B%d'
 set -g __jonathan_date_color d9bb68
+set -g __jonathan_print_bg_procs yes
+set -g __jonathan_bg_procs_color 678572
 
 ### Greeting
 set -g __jonathan_print_greeting no
@@ -109,7 +112,7 @@ set -g __jonathan_greeting_msg <greeting message>
 - `__jonathan_prompt_char`. Changes the last prompt chars before the cursor, default is `'><>'`.
 - `__jonathan_prompt_char_rewrite_root`. If set to `yes`, the `__jonathan_prompt_char` character will be used as root prompt character instead of the default `#`.
 - `__jonathan_use_shrunk_pwd`. If set to `yes`, will show the working directory as `~/m/s/directory` instead of `~/my/super/directory`.
-- `__jonathan_print_*`. `yes` to show `no` to hide (who would have thought). You can replace `*` by `time,git,env,multiplexer,user,hostname,cmd_duration,return_code,date,greeting`. All are `yes` by default except for `greeting`.
+- `__jonathan_print_*`. `yes` to show `no` to hide (who would have thought). You can replace `*` by `time,git,env,multiplexer,user,hostname,cmd_duration,return_code,date,bg_procs,greeting`. All are `yes` by default except for `greeting`.
 - `__jonathan_minimum_midbar_length`. Sets the minimum length of the middle filling bar before starting to crop the working directory. Default is `3`.
 - `__jonathan_show_pwd_beginning_on_crop`. Sets the number of characters of the wd to show before starting to crop. Default is `15`, `0` will directly start to crop the wd.
 - `__jonathan_date_format`. Sets the format for the date prompt, uses the GNU date command.

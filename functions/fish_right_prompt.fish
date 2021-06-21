@@ -11,6 +11,9 @@
 # set -g __jonathan_print_date yes
 # set -g __jonathan_date_format '+%a,%B%d'
 # set -g __jonathan_date_color d9bb68
+#
+# set -g __jonathan_print_bg_procs yes
+# set -g __jonathan_bg_procs_color 678572
 
 function fish_right_prompt 
   # Settings
