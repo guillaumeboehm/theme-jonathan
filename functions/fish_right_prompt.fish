@@ -33,7 +33,7 @@ function fish_right_prompt
   end
 
   set -l approximate_length (math "$__jonathan_left_second_line_length+30")
-  if test (math "$COLUMNS/$approximate_length") -gt 2 # a bit random / to think through
+  if test (math "$COLUMNS/$approximate_length") -gt 1.5 # a bit random / to think through
     # cmd duration
     if [ "$__jonathan_print_cmd_duration" = 'yes' ]
       set -l cmd_duration $CMD_DURATION

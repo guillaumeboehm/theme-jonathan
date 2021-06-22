@@ -63,6 +63,7 @@ function fish_prompt
   set -l hostname_color (set_color $__jonathan_hostname_color)
 
   set -l term_width $COLUMNS
+  set -ge __jonathan_hide_right_side
 
   set -l current_user ''
   set -l user_length 0

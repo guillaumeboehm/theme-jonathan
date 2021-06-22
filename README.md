@@ -34,7 +34,7 @@ $ omf install https://github.com/guillaumeboehm/theme-jonathan
 * Background jobs prompt
 * Very customisable, choose what to display and the color of everything
 * Choose your prompt character, I recommend 'ω'
-* A bit on the heavy side, not recommended for performance
+* A bit on the heavy side, not recommended for performance for now (probably has quite a bit of room for optimisation)
 
 ## Configuration
 
