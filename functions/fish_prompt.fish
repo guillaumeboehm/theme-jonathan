@@ -183,7 +183,7 @@ function fish_prompt
   set -g __jonathan_left_second_line_length 1
   # support for virtual env name
   if set -q VIRTUAL_ENV; and test $__jonathan_print_env = 'yes'
-    set -l env'{'(basename "$VIRTUAL_ENV")'}'
+    set -l env '{'(basename "$VIRTUAL_ENV")'}'
     set -l env_length (string length $env)
     set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+$env_length")
     echo -n $env_color$env
