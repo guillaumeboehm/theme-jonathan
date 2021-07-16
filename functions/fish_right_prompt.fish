@@ -22,6 +22,20 @@ function fish_right_prompt
     
   set -l exit_code $status
 
+
+  if test $COLUMNS -lt 20
+
+    if [ "$__jonathan_print_return_code" = 'yes' ]
+      if test $exit_code -ne 0
+        set_color $__jonathan_return_code_error_color
+      else
+        set_color $__jonathan_return_code_success_color
+      end
+      printf '%d↵' $exit_code
+    end
+    return 1
+  end
+
   # return code
   if [ "$__jonathan_print_return_code" = 'yes' ]
     if test $exit_code -ne 0

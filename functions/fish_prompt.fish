@@ -40,16 +40,10 @@ function fish_prompt
   # Cache exit status
   set -l last_status $status
 
-  # Just compute these once, to save a few cycles when displaying the prompt
-  if not set -q __fish_prompt_hostname
-    set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
-  end
-
   set -l normal (set_color normal)
   set -l white (set_color FFFFFF)
-
+  
   __jonathan_prompt_settings
-
   # Setup colors
   set -l main_color (set_color $__jonathan_main_color)
   set -l secondary_color (set_color $__jonathan_secondary_color)
@@ -61,6 +55,16 @@ function fish_prompt
   set -l multiplexer_color (set_color $__jonathan_multiplexer_color)
   set -l user_color (set_color $__jonathan_user_color)
   set -l hostname_color (set_color $__jonathan_hostname_color)
+
+  if test $COLUMNS -lt 20
+    echo -n $main_color'>' $normal
+    return 1
+  end
+
+  # Just compute these once, to save a few cycles when displaying the prompt
+  if not set -q __fish_prompt_hostname
+    set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
+  end
 
   set -l term_width $COLUMNS
   set -ge __jonathan_hide_right_side
@@ -181,17 +185,20 @@ function fish_prompt
   # Line 2
   echo -n $main_color'╰'
   set -g __jonathan_left_second_line_length 1
+  set -l git_length (string length (__fish_git_prompt $sep"on %s" | sed 's/\x1B[@A-Z\\\]^_]\|\x1B\[[0-9:;<=>?]*[-!"#$%&'"'"'()*+,.\/]*[][\\@A-Z^_`a-z{|}~]//g')) # computed beforehand to know if I need to print the parentheses in small windows
+  set -l git_length (math "$git_length-5")
+
   # support for virtual env name
-  if set -q VIRTUAL_ENV; and test $__jonathan_print_env = 'yes'
+  if set -q VIRTUAL_ENV; and test $__jonathan_print_env = 'yes'; and test $COLUMNS -gt 50
     set -l env '{'(basename "$VIRTUAL_ENV")'}'
     set -l env_length (string length $env)
     set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+$env_length")
     echo -n $env_color$env
   end
-  if test $__jonathan_print_time = 'yes'; or test $__jonathan_print_git = 'yes'
+  if test \( $__jonathan_print_time = 'yes' -a $COLUMNS -gt 50 \) -o \( $__jonathan_print_git = 'yes' -a $git_length -gt 0 \)
     echo -n $main_color'─('
     set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+3") # -()
-    if test $__jonathan_print_time = 'yes'
+    if test $__jonathan_print_time = 'yes'; and test $COLUMNS -gt 50
       set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+8")
       echo -n $time_color(date +%H:%M:%S)
     end
@@ -201,8 +208,6 @@ function fish_prompt
       set sep ' '
     end
     if test $__jonathan_print_git = 'yes'
-      set -l git_length (string length (__fish_git_prompt $sep"on %s" | sed 's/\x1B[@A-Z\\\]^_]\|\x1B\[[0-9:;<=>?]*[-!"#$%&'"'"'()*+,.\/]*[][\\@A-Z^_`a-z{|}~]//g'))
-      set -l git_length (math "$git_length-5")
       set -g __jonathan_left_second_line_length (math "$__jonathan_left_second_line_length+$git_length")
       __fish_git_prompt $sep"on %s"
     end
