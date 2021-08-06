@@ -63,7 +63,7 @@ function fish_prompt
 
   # Just compute these once, to save a few cycles when displaying the prompt
   if not set -q __fish_prompt_hostname
-    set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
+    set -g __fish_prompt_hostname (echo $hostname)
   end
 
   set -l term_width $COLUMNS
